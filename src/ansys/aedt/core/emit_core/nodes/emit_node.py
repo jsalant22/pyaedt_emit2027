@@ -939,13 +939,19 @@ class EmitNode:
 
 
     def _get_active_band_frequencies(self, mode, units="Hz"):
-        """Returns the frequencies of the active band for this node.
+        """Returns active band frequencies for this node.
+
+        Parameters
+        ----------
+        mode : TxRxMode
+            The mode of the node (TX or RX).
+        units : str, optional
+            The units for the frequencies. The default is "Hz".
 
         Returns
         -------
-        list of tuples
-            The frequencies of the active band for this node as a list of tuples.
-            [(start_freq1, stop_freq1), (start_freq2, stop_freq2)]
+        list of floats
+            List of frequencies for the active band.
         """
         if mode == TxRxMode.RX:
             isRx = True
@@ -953,9 +959,6 @@ class EmitNode:
             isRx = False
 
         freqs = self._oRevisionData.GetActiveBandFrequencies(self._result_id, self._node_id, isRx)
-
-        if not units:
-            freqs = [self._convert_to_internal_units(freq, "Freq") for freq in freqs]
-        else:
-            freqs = [consts.unit_converter(float(freq), "Frequency", "Hz", units) for freq in freqs]
+        freqs = [consts.unit_converter(float(freq), "Frequency", "Hz", units) for freq in freqs]
+        
         return freqs

@@ -563,9 +563,6 @@ class Revision:
         for band in bands:
             if band.name == band_name:
                 band_node = band
-        
-        if not units:
-            units = "MHz"
 
         if tx_rx_mode is None or tx_rx_mode == TxRxMode.BOTH:
             raise ValueError("The mode type must be specified as either Tx or Rx.")
@@ -705,14 +702,9 @@ class Revision:
                     rx_band: Band
                     rx_freq = self.get_active_frequencies(rx_radio.name, rx_band.name, mode_rx)[0]
 
-                    # The start and stop frequencies define the Band's extents,
-                    # while the active frequencies are a subset of the Band's frequencies
-                    # being used for this specific project as defined in the Radio's Sampling.
-                    # Values are returned in default units, so convert to MHz
-                    hz_to_mhz = 1e-6
-                    rx_start_freq = rx_band.start_frequency * hz_to_mhz
-                    rx_stop_freq = rx_band.stop_frequency * hz_to_mhz
-                    rx_channel_bandwidth = rx_band.channel_bandwidth * hz_to_mhz
+                    rx_start_freq = rx_band.start_frequency
+                    rx_stop_freq = rx_band.stop_frequency
+                    rx_channel_bandwidth = rx_band.channel_bandwidth
 
                     for tx_band in tx_band_nodes:
                         tx_band: Band
@@ -723,10 +715,10 @@ class Revision:
                         if not interaction.is_valid():
                             continue
 
-                        domain.set_receiver(rx_radio.name, rx_band.name, rx_freq)
+                        domain.set_receiver(rx_radio.name, rx_band.name, rx_freq, 'Hz')
                         tx_freqs = self.get_active_frequencies(tx_radio.name, tx_band.name, mode_tx)
                         for tx_freq in tx_freqs:
-                            domain.set_interferer(tx_radio.name, tx_band.name, tx_freq)
+                            domain.set_interferer(tx_radio.name, tx_band.name, tx_freq, 'Hz')
                             instance = interaction.get_instance(domain)
                             if not instance.has_valid_values():
                                 # check for saturation somewhere in the chain
@@ -891,13 +883,13 @@ class Revision:
                     # check for valid interaction, this would catch any disabled radio pairs
                     if not interaction.is_valid():
                         continue
-                    domain.set_receiver(rx_radio.name, rx_band_name, rx_freq)
+                    domain.set_receiver(rx_radio.name, rx_band_name, rx_freq, 'Hz')
                     tx_freqs = self.get_active_frequencies(tx_radio.name, tx_band_name, mode_tx)
 
                     power_list = []
 
                     for tx_freq in tx_freqs:
-                        domain.set_interferer(tx_radio.name, tx_band_name, tx_freq)
+                        domain.set_interferer(tx_radio.name, tx_band_name, tx_freq, 'Hz')
                         instance = interaction.get_instance(domain)
                         if not instance.has_valid_values():
                             # check for saturation somewhere in the chain
