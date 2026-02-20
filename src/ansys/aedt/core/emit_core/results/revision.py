@@ -556,10 +556,9 @@ class Revision:
         >>> freqs = aedtapp.results.current_revision.get_active_frequencies(
                 'Bluetooth', 'Rx - Base Data Rate', TxRxMode.RX)
         """
-        
         radio_node = self.get_component_node(radio_name)
         bands = self.get_all_band_nodes(radio_node, tx_rx_mode, enabled_only=True)
-        band_node : Band
+        band_node: Band
         for band in bands:
             if band.name == band_name:
                 band_node = band
@@ -715,10 +714,10 @@ class Revision:
                         if not interaction.is_valid():
                             continue
 
-                        domain.set_receiver(rx_radio.name, rx_band.name, rx_freq, 'Hz')
+                        domain.set_receiver(rx_radio.name, rx_band.name, rx_freq, "Hz")
                         tx_freqs = self.get_active_frequencies(tx_radio.name, tx_band.name, mode_tx)
                         for tx_freq in tx_freqs:
-                            domain.set_interferer(tx_radio.name, tx_band.name, tx_freq, 'Hz')
+                            domain.set_interferer(tx_radio.name, tx_band.name, tx_freq, "Hz")
                             instance = interaction.get_instance(domain)
                             if not instance.has_valid_values():
                                 # check for saturation somewhere in the chain
@@ -883,13 +882,13 @@ class Revision:
                     # check for valid interaction, this would catch any disabled radio pairs
                     if not interaction.is_valid():
                         continue
-                    domain.set_receiver(rx_radio.name, rx_band_name, rx_freq, 'Hz')
+                    domain.set_receiver(rx_radio.name, rx_band_name, rx_freq, "Hz")
                     tx_freqs = self.get_active_frequencies(tx_radio.name, tx_band_name, mode_tx)
 
                     power_list = []
 
                     for tx_freq in tx_freqs:
-                        domain.set_interferer(tx_radio.name, tx_band_name, tx_freq, 'Hz')
+                        domain.set_interferer(tx_radio.name, tx_band_name, tx_freq, "Hz")
                         instance = interaction.get_instance(domain)
                         if not instance.has_valid_values():
                             # check for saturation somewhere in the chain

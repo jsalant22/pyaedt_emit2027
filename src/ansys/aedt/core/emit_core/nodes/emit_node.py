@@ -28,7 +28,7 @@ import ast
 from typing import TypeVar
 import warnings
 
-from ansys.aedt.core.emit_core.emit_constants import EMIT_FN_ALLOWED_FUNCS 
+from ansys.aedt.core.emit_core.emit_constants import EMIT_FN_ALLOWED_FUNCS
 from ansys.aedt.core.emit_core.emit_constants import EMIT_FN_ALLOWED_OPS
 from ansys.aedt.core.emit_core.emit_constants import EMIT_FN_ALLOWED_VARS
 from ansys.aedt.core.emit_core.emit_constants import EMIT_INTERNAL_UNITS
@@ -937,7 +937,6 @@ class EmitNode:
             print(f"Failed to add child node of type {child_type} to node {self.name}. Error: {e}")
         return new_node
 
-
     def _get_active_band_frequencies(self, mode, units="Hz"):
         """Returns active band frequencies for this node.
 
@@ -960,5 +959,5 @@ class EmitNode:
 
         freqs = self._oRevisionData.GetActiveBandFrequencies(self._result_id, self._node_id, isRx)
         freqs = [consts.unit_converter(float(freq), "Frequency", "Hz", units) for freq in freqs]
-        
+
         return freqs
