@@ -169,6 +169,9 @@ class Emit(Design, PyAedtBase):
         self._modeler = ModelerEmit(self)
         self._couplings = CouplingsEmit(self)
         self._schematic = EmitSchematic(self)
+        #////////////////////////////////////
+        #// THIS IS A TEST                 //
+        #////////////////////////////////////
         if self._aedt_version > "2023.1":
             # the next 2 lines of code are needed to point
             # the EMIT object to the correct EmiApiPython
