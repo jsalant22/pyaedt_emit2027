@@ -456,7 +456,7 @@ class Revision:
         else:
             err_msg = self.result_mode_error()
             warnings.warn(err_msg)
-            return None
+            return []
         if len(receivers) == 0:
             warnings.warn("No valid receivers in the project.")
         return receivers
@@ -504,10 +504,10 @@ class Revision:
         else:
             err_msg = self.result_mode_error()
             warnings.warn(err_msg)
-            return None
+            return []
         if len(transmitters) == 0:
             warnings.warn("No valid radios or emitters in the project.")
-            return None
+            return []
         return transmitters
 
     @pyaedt_function_handler()
@@ -946,7 +946,7 @@ class Revision:
 
         if len(radio_nodes) == 0:
             warnings.warn("No valid radios in the project.")
-            return None
+            return []
         return radio_nodes
 
     @pyaedt_function_handler
