@@ -202,17 +202,21 @@ class EmitNode:
 
         return ""
 
-    @property
     @min_aedt_version("2025.2")
-    def properties(self) -> dict:
+    def _properties(self, skip_verify: bool = False) -> dict:
         """Node properties.
+
+        Parameters
+        ----------
+        skip_verify : bool, optional
+            Whether to skip property verification. Default is ``False``.
 
         Returns
         -------
         dict
             Dictionary of the node's properties with display name as key.
         """
-        props = self._oRevisionData.GetEmitNodeProperties(self._result_id, self._node_id, True)
+        props = self._oRevisionData.GetEmitNodeProperties(self._result_id, self._node_id, skip_verify)
         props = self.props_to_dict(props)
         return props
 
@@ -288,7 +292,7 @@ class EmitNode:
             elif node_type == "Band" and props["IsEmitterBand"] == "true":
                 type_class = getattr(generated, f"{prefix}Waveform")
             elif node_type == "TxSpectralProfNode":
-                if self.properties["IsEmitterBand"] == "true":
+                if self._properties(skip_verify=True)["IsEmitterBand"] == "true":
                     type_class = getattr(generated, f"{prefix}TxSpectralProfEmitterNode")
                 else:
                     type_class = getattr(generated, f"{prefix}TxSpectralProfNode")
@@ -407,7 +411,7 @@ class EmitNode:
             else:
                 error_text = (
                     f'Exception in SetEmitNodeProperties: Failed setting property "{prop}" to "{value}" for '
-                    f'{self.properties["Type"]} node "{self.name}"'
+                    f'{self._properties(skip_verify=True)["Type"]} node "{self.name}"'
                 )
             raise ValueError(error_text)
 

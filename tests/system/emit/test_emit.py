@@ -2105,7 +2105,7 @@ def test_emit_nodes(interference) -> None:
     assert scene_node.valid
     assert scene_node.name
 
-    assert scene_node.properties
+    assert scene_node._properties()
 
     assert len(scene_node.allowed_child_types) > 0
 
