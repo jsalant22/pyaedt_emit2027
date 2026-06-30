@@ -210,6 +210,9 @@ class EmitNode:
         ----------
         skip_verify : bool, optional
             Whether to skip property verification. Default is ``False``.
+            If ''False'', EMIT verifies that the returned properties are currently accessible given the node's
+            current state. For example, if an antenna's ``Position Defined=False``, then the ``position`` and
+            ``orientation`` keys will not appear in the returned list.
 
         Returns
         -------
