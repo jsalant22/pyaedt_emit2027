@@ -1455,7 +1455,6 @@ def test_receiver_n_to_1_enabled(interference):
     DESKTOP_VERSION < "2027.1",
     reason="Skipped on versions earlier than 2027.1",
 )
-@pytest.mark.skipif(True, reason="Dialog popup bug")
 def test_analysis_enabled(n_to_1):
     """Test enabling/disabling radio pairs and receiver N-to-1 analysis."""
     # Generate a revision
@@ -2296,7 +2295,7 @@ def test_all_generated_emit_node_properties(emit_app) -> None:
                         class_attr.fset(node, enum_val)
                 except (AttributeError, GrpcApiError, ValueError):
                     pass
-                for bool_key in ([None] if limited else list(node_bools.keys() or [None])):
+                for bool_key in [None] if limited else list(node_bools.keys() or [None]):
                     if stop_testing:
                         break
                     if bool_key is None:
@@ -2540,9 +2539,7 @@ def test_all_generated_emit_node_properties(emit_app) -> None:
                         child_node_add_exceptions[node_type] = exception
 
                 if node_type in nodes_to_skip and not dev_only:
-                    log_progress(
-                        f"Testing node {node_type} skipped. Set EMIT_PYAEDT_LONG=1 to include."
-                    )
+                    log_progress(f"Testing node {node_type} skipped. Set EMIT_PYAEDT_LONG=1 to include.")
                     continue
 
                 log_progress(f"Testing node type {node_type}...")
@@ -3525,6 +3522,7 @@ def test_terminator_table_persistence(add_app) -> None:
     assert reopened_amplifier.table_data == expected_amplifier_table
 
     app2.close_project(app2.project_name, save=False)
+
 
 @pytest.mark.skipif(DESKTOP_VERSION < "2027.1", reason="Skipped on versions earlier than 2027 R1.")
 def test_compare_nodes(emit_app) -> None:
