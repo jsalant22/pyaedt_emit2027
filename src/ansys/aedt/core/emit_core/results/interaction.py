@@ -158,6 +158,8 @@ class Interaction:
             domain.interferer_band_names,
             domain.interferer_channel_frequencies,
         )
+        if float(availability) == -1:
+            raise ValueError(self.get_availability_warning(domain))
         return float(availability)
 
     @min_aedt_version("2027.1")
@@ -239,27 +241,8 @@ class Interaction:
         if len(domain.interferer_names) > 1:
             raise ValueError("Instance data for multiple simultaneous interferers not available.")
 
-        # Fetch instance data. The backend always computes both EMI and desense
-        # in a single pass and returns [encodedEmi, encodedDesense, worstEmiIntCat].
-
-        instance_values = self.emit_project._emit_com_module.GetInstance(
-            self.revision.results_index,
-            domain.receiver_name,
-            domain.receiver_band_name,
-            domain.receiver_channel_frequency,
-            domain.interferer_names,
-            domain.interferer_band_names,
-            domain.interferer_channel_frequencies,
-        )
-
-        # Populate both EMI and desense from the single response array.
         instance = InteractionInstance(self.emit_project, domain, self.revision, self)
         self._instances.append(instance)
-        if instance_values and len(instance_values) >= 3:
-            instance._encoded_emi = int(instance_values[0])
-            instance._encoded_desense = int(instance_values[1])
-            instance._largest_emi_interferer_type = int(instance_values[2])
-
         return instance
 
     @min_aedt_version("2027.1")
@@ -406,8 +389,8 @@ class Interaction:
 
         # Last two fields are always encodedValue and worstIntCat
         rx_radio, rx_band, rx_freq_str, *middle_and_tail = parts
-        worst_int_cat = int(middle_and_tail.pop())
-        encoded_value = int(middle_and_tail.pop())
+        # worst_int_cat = int(middle_and_tail.pop())
+        # encoded_value = int(middle_and_tail.pop())
         tx_parts = middle_and_tail
 
         worst_domain = InteractionDomain(self.emit_project)
@@ -422,16 +405,9 @@ class Interaction:
             tx_radios, tx_bands, tx_freq_strs = zip(*tx_entries)
             worst_domain.set_interferers(list(tx_radios), list(tx_bands), [float(f) for f in tx_freq_strs], "Hz")
 
-        # For both 1-to-1 and N-to-1, a worst-case instance only carries the requested
-        # result type. The other is always 30201 ("not available"), matching old API behavior.
+        # Tag the instance with which result type it was created for so that
+        # get_value() can reject cross-type queries (e.g. asking for DESENSE on
+        # a worst-case EMI instance).
         instance = InteractionInstance(self.emit_project, worst_domain, self.revision, self)
-        self._instances.append(instance)
-        if result_type == ResultType.EMI:
-            instance._encoded_emi = encoded_value
-            instance._largest_emi_interferer_type = worst_int_cat
-            instance._encoded_desense = 30201
-        else:
-            instance._encoded_desense = encoded_value
-            instance._encoded_emi = 30201
-            instance._largest_emi_interferer_type = None
+        instance._worst_case_result_type = result_type
         return instance

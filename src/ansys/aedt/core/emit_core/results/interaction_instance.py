@@ -49,6 +49,8 @@ class InteractionInstance:
         self.revision = revision
         self.parent_interaction = parent_interaction
         """Reference to parent Interaction for invalidation tracking."""
+        self._worst_case_result_type = None
+        """Set for worst-case instances to restrict which result type may be queried."""
 
     @min_aedt_version("2027.1")
     @pyaedt_function_handler()
@@ -135,12 +137,18 @@ class InteractionInstance:
                 f"Invalid result type: {result_type}. Must be one of: EMI, DESENSE, SENSITIVITY, POWER_AT_RX."
             )
 
-        # For worst-case instances, check if the requested result type is available locally
-        # (a worst-case EMI instance has _encoded_desense=30201 meaning "not available")
-        if result_type == ResultType.EMI and self._encoded_emi == 30201:
-            raise ValueError("EMI value not available.")
-        elif result_type in (ResultType.DESENSE, ResultType.SENSITIVITY) and self._encoded_desense == 30201:
-            raise ValueError("Desense and sensitivity values not available.")
+        # For worst-case instances, restrict to the result type they were created for.
+        if self._worst_case_result_type is not None:
+            if (
+                result_type in (ResultType.DESENSE, ResultType.SENSITIVITY)
+                and self._worst_case_result_type == ResultType.EMI
+            ):
+                raise ValueError("Desense and sensitivity values not available.")
+            elif result_type == ResultType.EMI and self._worst_case_result_type in (
+                ResultType.DESENSE,
+                ResultType.SENSITIVITY,
+            ):
+                raise ValueError("EMI value not available.")
 
         value = self.emit_project._emit_com_module.GetResultValue(
             self.revision.results_index,
@@ -178,7 +186,7 @@ class InteractionInstance:
         if error:
             raise ValueError(f"Interaction instance is not valid: {error}")
 
-        if self._encoded_emi == 30201:
+        if self._worst_case_result_type is not None and self._worst_case_result_type != ResultType.EMI:
             raise ValueError("An EMI value is not available so the largest EMI problem type is undefined.")
 
         if not self.has_valid_values():
