@@ -874,3 +874,46 @@ def test_defect_1477851_nto1_export(emit_app) -> None:
         f"got {len(nto1_rows)}"
     )
 
+
+@pytest.mark.skipif(not DESKTOP_VERSION or DESKTOP_VERSION < "2027.1", reason="Regression test for defect 1477961.")
+def test_defect_1477961_coupling_node_insertion_order(emit_app):
+    """Regression test for TFS defect 1477961.
+
+    coupling node order incorrect in Linked_Coupling_FarField test
+    https://tfs.ansys.com:8443/tfs/ANSYS_Development/Portfolio/_workitems/edit/1477961
+
+    Severity: Class 2 - Minor Problem
+
+    When coupling nodes are added via script, they should maintain insertion
+    order. Before the fix, they were sorted alphabetically when the AEDT tree
+    was synced to iemit (via SortByNodeOrder with default NodeOrder=0), causing
+    coupling priority inversion.
+    """
+    emit_app.schematic.create_radio_antenna("New Radio")
+    emit_app.schematic.create_radio_antenna("New Radio")
+
+    rev: Revision = emit_app.results.analyze()
+    couplings_node: CouplingsNode = rev.get_coupling_data_node()
+
+    # Add path loss first, then custom coupling.
+    # "Custom Coupling" < "Path Loss Coupling" alphabetically,
+    # so the bug would reverse their order after re-sync.
+    path_loss = couplings_node.add_path_loss_coupling()
+    custom = couplings_node.add_custom_coupling()
+
+    first_name = path_loss.name
+    second_name = custom.name
+
+    # Re-analyze to force AEDT tree -> iemit sync via SortByNodeOrder
+    rev2: Revision = emit_app.results.analyze()
+    couplings_node2: CouplingsNode = rev2.get_coupling_data_node()
+    children = couplings_node2.children
+    child_names = [c.name for c in children]
+
+    first_idx = child_names.index(first_name)
+    second_idx = child_names.index(second_name)
+    assert first_idx < second_idx, (
+        f"Coupling nodes should maintain insertion order. "
+        f"Expected '{first_name}' before '{second_name}', got: {child_names}"
+    )
+
