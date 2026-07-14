@@ -24,8 +24,8 @@
 
 from enum import Enum
 
-from ansys.aedt.core.generic import constants as consts
 from ansys.aedt.core.emit_core.nodes.emit_node import EmitNode
+from ansys.aedt.core.generic import constants as consts
 from ansys.aedt.core.internal.checks import min_aedt_version
 
 
@@ -51,7 +51,9 @@ class Band(EmitNode):
         RX = "Rx"
 
     @min_aedt_version("2027.1")
-    def export_to_csv(self, file_name: str = "", channel_freq: float = 100e6, channel_type: ChannelType | None = None) -> str:
+    def export_to_csv(
+        self, file_name: str = "", channel_freq: float = 100e6, channel_type: ChannelType | None = None
+    ) -> str:
         """Export's the data for this node
 
         Parameters
@@ -66,7 +68,8 @@ class Band(EmitNode):
         Returns
         -------
         csv_data: str
-            stringified data for the node returned if file_name not specified"""
+            stringified data for the node returned if file_name not specified
+        """
         if channel_type is None or channel_type.value == "Tx":
             keys = "TraceChannelFreq|TraceChannelType|TraceTxOffsetFreq|NarrowOrBroad"
             offset = channel_freq + self.tx_offset
@@ -243,7 +246,7 @@ class Band(EmitNode):
     def modulation(self) -> ModulationOption:
         """Modulation used for the transmitted/received signal."""
         val = self._get_property("Modulation")
-        val = self.ModulationOption[val.upper()]
+        val = self.ModulationOption(val)
         return val
 
     @modulation.setter
@@ -351,7 +354,7 @@ class Band(EmitNode):
     def psk_type(self) -> PSKTypeOption:
         """PSK modulation order: helps determine spectral profile."""
         val = self._get_property("PSK Type")
-        val = self.PSKTypeOption[val.upper()]
+        val = self.PSKTypeOption(val)
         return val
 
     @psk_type.setter
@@ -369,7 +372,7 @@ class Band(EmitNode):
     def fsk_type(self) -> FSKTypeOption:
         """FSK modulation order: helps determine spectral profile."""
         val = self._get_property("FSK Type")
-        val = self.FSKTypeOption[val.upper()]
+        val = self.FSKTypeOption(val)
         return val
 
     @fsk_type.setter
@@ -389,7 +392,7 @@ class Band(EmitNode):
     def qam_type(self) -> QAMTypeOption:
         """QAM modulation order: helps determine spectral profile."""
         val = self._get_property("QAM Type")
-        val = self.QAMTypeOption[val.upper()]
+        val = self.QAMTypeOption(val)
         return val
 
     @qam_type.setter
@@ -409,7 +412,7 @@ class Band(EmitNode):
     def apsk_type(self) -> APSKTypeOption:
         """APSK modulation order: helps determine spectral profile."""
         val = self._get_property("APSK Type")
-        val = self.APSKTypeOption[val.upper()]
+        val = self.APSKTypeOption(val)
         return val
 
     @apsk_type.setter
@@ -497,7 +500,7 @@ class Band(EmitNode):
     def radar_type(self) -> RadarTypeOption:
         """Radar type: helps determine spectral profile."""
         val = self._get_property("Radar Type")
-        val = self.RadarTypeOption[val.upper()]
+        val = self.RadarTypeOption(val)
         return val
 
     @radar_type.setter

@@ -22,11 +22,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ansys.aedt.core.emit_core.nodes.generated import AntennaNode
-
 from enum import Enum
 
 from ansys.aedt.core.emit_core.nodes.emit_node import EmitNode
+from ansys.aedt.core.emit_core.nodes.generated import AntennaNode
 from ansys.aedt.core.internal.checks import min_aedt_version
 
 
@@ -48,7 +47,9 @@ class LogDistanceCouplingNode(EmitNode):
         return self._node_type
 
     @min_aedt_version("2027.1")
-    def export_to_csv(self, file_name: str, antennas: tuple[AntennaNode, AntennaNode] | None = None, ports: str = "") -> str:
+    def export_to_csv(
+        self, file_name: str, antennas: tuple[AntennaNode, AntennaNode] | None = None, ports: str = ""
+    ) -> str:
         """Export's the data for this node
 
         Parameters
@@ -64,7 +65,8 @@ class LogDistanceCouplingNode(EmitNode):
         Returns
         -------
         csv_data: str
-            stringified data for the node returned if file_name not specified"""
+            stringified data for the node returned if file_name not specified
+        """
         if antennas is not None and all(isinstance(x, AntennaNode) for x in antennas):
             a1, a2 = antennas
             vals = f"{a1.name}|{a2.name}"
@@ -82,7 +84,8 @@ class LogDistanceCouplingNode(EmitNode):
             tuple of antenna nodes to pull the selected Tx and Rx antenna names from for the export.
             If not specified, will use the names specified by the ports parameter.
         ports: str, optional
-            the ports to export the data for."""
+            the ports to export the data for.
+        """
         if antennas is not None and all(isinstance(x, AntennaNode) for x in antennas):
             a1, a2 = antennas
             vals = f"{a1.name}|{a2.name}"
@@ -153,7 +156,7 @@ class LogDistanceCouplingNode(EmitNode):
     def environment(self) -> EnvironmentOption:
         """Specify the environment type for the Log Distance model."""
         val = self._get_property("Environment")
-        val = self.EnvironmentOption[val.upper()]
+        val = self.EnvironmentOption(val)
         return val
 
     @environment.setter
@@ -241,7 +244,7 @@ class LogDistanceCouplingNode(EmitNode):
     def fading_type(self) -> FadingTypeOption:
         """Specify the type of fading to include."""
         val = self._get_property("Fading Type")
-        val = self.FadingTypeOption[val.upper()]
+        val = self.FadingTypeOption(val)
         return val
 
     @fading_type.setter

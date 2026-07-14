@@ -102,7 +102,7 @@ class TxHarmonicNode(EmitNode):
     def harmonic_table_units(self) -> HarmonicTableUnitsOption:
         """Specifies the units for the Harmonics."""
         val = self._get_property("Harmonic Table Units")
-        val = self.HarmonicTableUnitsOption[val.upper()]
+        val = self.HarmonicTableUnitsOption(val)
         return val
 
     @harmonic_table_units.setter

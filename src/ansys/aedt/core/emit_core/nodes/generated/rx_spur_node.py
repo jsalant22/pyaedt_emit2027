@@ -49,7 +49,8 @@ class RxSpurNode(EmitNode):
     def import_csv_file(self, file_name: str) -> EmitNode:
         """Import a CSV File...
 
-        Note: The CSV file should not have any header lines and must contain only numeric values."""
+        Note: The CSV file should not have any header lines and must contain only numeric values.
+        """
         return self._import(file_name, "CsvFile")
 
     @min_aedt_version("2027.1")
@@ -106,7 +107,7 @@ class RxSpurNode(EmitNode):
     def spur_table_units(self) -> SpurTableUnitsOption:
         """Specifies the units for the Spurs."""
         val = self._get_property("Spur Table Units")
-        val = self.SpurTableUnitsOption[val.upper()]
+        val = self.SpurTableUnitsOption(val)
         return val
 
     @spur_table_units.setter

@@ -24,8 +24,8 @@
 
 from enum import Enum
 
-from ansys.aedt.core.generic import constants as consts
 from ansys.aedt.core.emit_core.nodes.emit_node import EmitNode
+from ansys.aedt.core.generic import constants as consts
 from ansys.aedt.core.internal.checks import min_aedt_version
 
 
@@ -64,7 +64,8 @@ class Waveform(EmitNode):
         Returns
         -------
         csv_data: str
-            stringified data for the node returned if file_name not specified"""
+            stringified data for the node returned if file_name not specified
+        """
         keys = "TraceChannelFreq|TraceChannelType|NarrowOrBroad"
         vals = f"{channel_freq}|Tx|Narrowband"
         return self._export_to_csv(file_name, keys, vals)
@@ -121,7 +122,7 @@ class Waveform(EmitNode):
     def waveform(self) -> WaveformOption:
         """Modulation used for the transmitted/received signal."""
         val = self._get_property("Waveform")
-        val = self.WaveformOption[val.upper()]
+        val = self.WaveformOption(val)
         return val
 
     @waveform.setter
@@ -188,7 +189,7 @@ class Waveform(EmitNode):
     def spreading_type(self) -> SpreadingTypeOption:
         """Type of spreading employed by the Spread Spectrum Clock."""
         val = self._get_property("Spreading Type")
-        val = self.SpreadingTypeOption[val.upper()]
+        val = self.SpreadingTypeOption(val)
         return val
 
     @spreading_type.setter
@@ -321,7 +322,7 @@ class Waveform(EmitNode):
     def algorithm(self) -> AlgorithmOption:
         """Algorithm used to transform the imported time domain spectrum."""
         val = self._get_property("Algorithm")
-        val = self.AlgorithmOption[val.upper()]
+        val = self.AlgorithmOption(val)
         return val
 
     @algorithm.setter
@@ -393,7 +394,7 @@ class Waveform(EmitNode):
     def window_type(self) -> WindowTypeOption:
         """Windowing scheme used for importing time domain spectrum."""
         val = self._get_property("Window Type")
-        val = self.WindowTypeOption[val.upper()]
+        val = self.WindowTypeOption(val)
         return val
 
     @window_type.setter

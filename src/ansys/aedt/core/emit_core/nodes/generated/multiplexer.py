@@ -59,7 +59,8 @@ class Multiplexer(EmitNode):
         Returns
         -------
         csv_data: str
-            stringified data for the node returned if file_name not specified"""
+            stringified data for the node returned if file_name not specified
+        """
         keys = "SelectedInputPort|SelectedOutputPort"
         vals = f"{ports}"
         return self._export_to_csv(file_name, keys, vals)
@@ -72,7 +73,8 @@ class Multiplexer(EmitNode):
         ----------
         ports: str
             the ports to export the data for.
-            Default orientation port names: 1|2|3"""
+            Default orientation port names: 1|2|3
+        """
         keys = "SelectedInputPort|SelectedOutputPort"
         vals = f"{ports}"
         return self._plot(keys, vals)
@@ -143,7 +145,7 @@ class Multiplexer(EmitNode):
         definition for each pass band).
         """
         val = self._get_property("Multiplexer Type")
-        val = self.MultiplexerTypeOption[val.upper()]
+        val = self.MultiplexerTypeOption(val)
         return val
 
     @multiplexer_type.setter

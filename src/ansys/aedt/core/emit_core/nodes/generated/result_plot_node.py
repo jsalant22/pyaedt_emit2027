@@ -290,7 +290,7 @@ class ResultPlotNode(EmitNode):
     def major_grid_line_style(self) -> MajorGridLineStyleOption:
         """Select line style of major-tick grid lines."""
         val = self._get_property("Major Grid Line Style")
-        val = self.MajorGridLineStyleOption[val.upper()]
+        val = self.MajorGridLineStyleOption(val)
         return val
 
     @major_grid_line_style.setter
@@ -326,7 +326,7 @@ class ResultPlotNode(EmitNode):
     def minor_grid_line_style(self) -> MinorGridLineStyleOption:
         """Select line style of minor-tick grid lines."""
         val = self._get_property("Minor Grid Line Style")
-        val = self.MinorGridLineStyleOption[val.upper()]
+        val = self.MinorGridLineStyleOption(val)
         return val
 
     @minor_grid_line_style.setter
@@ -375,7 +375,7 @@ class ResultPlotNode(EmitNode):
     def bb_power_for_plots_unit(self) -> BBPowerforPlotsUnitOption:
         """Units to use for plotting broadband power densities."""
         val = self._get_property("BB Power for Plots Unit")
-        val = self.BBPowerforPlotsUnitOption[val.upper()]
+        val = self.BBPowerforPlotsUnitOption(val)
         return val
 
     @bb_power_for_plots_unit.setter

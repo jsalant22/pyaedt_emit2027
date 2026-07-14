@@ -49,7 +49,8 @@ class TxBbEmissionNode(EmitNode):
     def import_csv_file(self, file_name: str) -> EmitNode:
         """Import a CSV File...
 
-        Note: The CSV file should not have any header lines and must contain only numeric values."""
+        Note: The CSV file should not have any header lines and must contain only numeric values.
+        """
         return self._import(file_name, "CsvFile")
 
     @min_aedt_version("2027.1")
@@ -106,7 +107,7 @@ class TxBbEmissionNode(EmitNode):
     def noise_behavior(self) -> NoiseBehaviorOption:
         """Specifies the behavior of the parametric noise profile."""
         val = self._get_property("Noise Behavior")
-        val = self.NoiseBehaviorOption[val.upper()]
+        val = self.NoiseBehaviorOption(val)
         return val
 
     @noise_behavior.setter

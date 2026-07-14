@@ -115,7 +115,7 @@ class Cable(EmitNode):
         Constant Loss, or Coaxial Cable.
         """
         val = self._get_property("Cable Type")
-        val = self.CableTypeOption[val.upper()]
+        val = self.CableTypeOption(val)
         return val
 
     @cable_type.setter

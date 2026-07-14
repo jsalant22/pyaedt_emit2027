@@ -72,7 +72,7 @@ class SamplingNode(EmitNode):
     def sampling_type(self) -> SamplingTypeOption:
         """Sampling to apply to this configuration."""
         val = self._get_property("Sampling Type")
-        val = self.SamplingTypeOption[val.upper()]
+        val = self.SamplingTypeOption(val)
         return val
 
     @sampling_type.setter

@@ -127,7 +127,7 @@ class CADNode(EmitNode):
         Select the convention (order of rotations) for configuring orientation.
         """
         val = self._get_property("Orientation Mode")
-        val = self.OrientationModeOption[val.upper()]
+        val = self.OrientationModeOption(val)
         return val
 
     @orientation_mode.setter
@@ -193,7 +193,7 @@ class CADNode(EmitNode):
     def render_mode(self) -> RenderModeOption:
         """Select drawing style for surfaces."""
         val = self._get_property("Render Mode")
-        val = self.RenderModeOption[val.upper()]
+        val = self.RenderModeOption(val)
         return val
 
     @render_mode.setter

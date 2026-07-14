@@ -62,9 +62,10 @@ class EmitSceneNode(EmitNode):
             defined in the CAD file (only applicable to gltf/glb files).
 
         Returns
-        ------
+        -------
         node : EmitNode
-            The node."""
+            The node.
+        """
         return self._import(file_name, "CAD", create_antennas=create_antennas)
 
     @min_aedt_version("2025.2")
@@ -94,7 +95,7 @@ class EmitSceneNode(EmitNode):
     def ground_plane_normal(self) -> GroundPlaneNormalOption:
         """Specifies the axis of the normal to the ground plane."""
         val = self._get_property("Ground Plane Normal")
-        val = self.GroundPlaneNormalOption[val.upper()]
+        val = self.GroundPlaneNormalOption(val)
         return val
 
     @ground_plane_normal.setter

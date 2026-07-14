@@ -63,7 +63,8 @@ class TxSpectralProfNode(EmitNode):
         Returns
         -------
         csv_data: str
-            stringified data for the node returned if file_name not specified"""
+            stringified data for the node returned if file_name not specified
+        """
         keys = "TraceChannelFreq|TraceChannelType|NarrowOrBroad"
         vals = f"{channel_freq}|Tx|Narrowband"
         return self._export_to_csv(file_name, keys, vals)
@@ -115,7 +116,7 @@ class TxSpectralProfNode(EmitNode):
     def spectrum_type(self) -> SpectrumTypeOption:
         """Specifies EMI Margins to calculate."""
         val = self._get_property("Spectrum Type")
-        val = self.SpectrumTypeOption[val.upper()]
+        val = self.SpectrumTypeOption(val)
         return val
 
     @spectrum_type.setter
@@ -132,7 +133,7 @@ class TxSpectralProfNode(EmitNode):
     def tx_power(self) -> TxPowerOption:
         """Method used to specify the power."""
         val = self._get_property("Tx Power")
-        val = self.TxPowerOption[val.upper()]
+        val = self.TxPowerOption(val)
         return val
 
     @tx_power.setter
@@ -215,7 +216,7 @@ class TxSpectralProfNode(EmitNode):
     def harmonic_taper(self) -> HarmonicTaperOption:
         """Taper type used to set amplitude of harmonics."""
         val = self._get_property("Harmonic Taper")
-        val = self.HarmonicTaperOption[val.upper()]
+        val = self.HarmonicTaperOption(val)
         return val
 
     @harmonic_taper.setter
