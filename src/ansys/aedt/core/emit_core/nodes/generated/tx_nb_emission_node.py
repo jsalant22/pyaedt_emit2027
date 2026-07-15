@@ -102,7 +102,7 @@ class TxNbEmissionNode(EmitNode):
     def narrowband_behavior(self) -> NarrowbandBehaviorOption:
         """Specifies the behavior of the parametric narrowband emissions mask."""
         val = self._get_property("Narrowband Behavior")
-        val = self.NarrowbandBehaviorOption(val)
+        val = self.NarrowbandBehaviorOption[val.upper()]
         return val
 
     @narrowband_behavior.setter

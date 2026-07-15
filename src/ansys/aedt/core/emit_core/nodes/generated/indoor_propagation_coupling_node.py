@@ -173,7 +173,7 @@ class IndoorPropagationCouplingNode(EmitNode):
     def building_type(self) -> BuildingTypeOption:
         """Specify the building type for the Indoor Propagation model."""
         val = self._get_property("Building Type")
-        val = self.BuildingTypeOption(val)
+        val = self.BuildingTypeOption[val.upper()]
         return val
 
     @building_type.setter
@@ -261,7 +261,7 @@ class IndoorPropagationCouplingNode(EmitNode):
     def fading_type(self) -> FadingTypeOption:
         """Specify the type of fading to include."""
         val = self._get_property("Fading Type")
-        val = self.FadingTypeOption(val)
+        val = self.FadingTypeOption[val.upper()]
         return val
 
     @fading_type.setter

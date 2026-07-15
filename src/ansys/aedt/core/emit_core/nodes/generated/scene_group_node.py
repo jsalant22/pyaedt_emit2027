@@ -149,7 +149,7 @@ class SceneGroupNode(EmitNode):
         Select the convention (order of rotations) for configuring orientation.
         """
         val = self._get_property("Orientation Mode")
-        val = self.OrientationModeOption(val)
+        val = self.OrientationModeOption[val.upper()]
         return val
 
     @orientation_mode.setter

@@ -122,7 +122,7 @@ class Waveform(EmitNode):
     def waveform(self) -> WaveformOption:
         """Modulation used for the transmitted/received signal."""
         val = self._get_property("Waveform")
-        val = self.WaveformOption(val)
+        val = self.WaveformOption[val.upper()]
         return val
 
     @waveform.setter
@@ -189,7 +189,7 @@ class Waveform(EmitNode):
     def spreading_type(self) -> SpreadingTypeOption:
         """Type of spreading employed by the Spread Spectrum Clock."""
         val = self._get_property("Spreading Type")
-        val = self.SpreadingTypeOption(val)
+        val = self.SpreadingTypeOption[val.upper()]
         return val
 
     @spreading_type.setter
@@ -322,7 +322,7 @@ class Waveform(EmitNode):
     def algorithm(self) -> AlgorithmOption:
         """Algorithm used to transform the imported time domain spectrum."""
         val = self._get_property("Algorithm")
-        val = self.AlgorithmOption(val)
+        val = self.AlgorithmOption[val.upper()]
         return val
 
     @algorithm.setter
@@ -394,7 +394,7 @@ class Waveform(EmitNode):
     def window_type(self) -> WindowTypeOption:
         """Windowing scheme used for importing time domain spectrum."""
         val = self._get_property("Window Type")
-        val = self.WindowTypeOption(val)
+        val = self.WindowTypeOption[val.upper()]
         return val
 
     @window_type.setter

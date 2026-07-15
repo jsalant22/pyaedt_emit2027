@@ -105,7 +105,7 @@ class RxMixerProductNode(EmitNode):
     def mixer_product_taper(self) -> MixerProductTaperOption:
         """Taper for setting amplitude of mixer products."""
         val = self._get_property("Mixer Product Taper")
-        val = self.MixerProductTaperOption(val)
+        val = self.MixerProductTaperOption[val.upper()]
         return val
 
     @mixer_product_taper.setter
@@ -285,7 +285,7 @@ class RxMixerProductNode(EmitNode):
     def mixing_mode(self) -> MixingModeOption:
         """Specifies whether the IF frequency is > or < RF channel frequency."""
         val = self._get_property("Mixing Mode")
-        val = self.MixingModeOption(val)
+        val = self.MixingModeOption[val.upper()]
         return val
 
     @mixing_mode.setter
@@ -331,7 +331,7 @@ class RxMixerProductNode(EmitNode):
     def use_high_lo(self) -> UseHighLOOption:
         """Use High LO above/below the transition frequency."""
         val = self._get_property("Use High LO")
-        val = self.UseHighLOOption(val)
+        val = self.UseHighLOOption[val.upper()]
         return val
 
     @use_high_lo.setter
@@ -348,7 +348,7 @@ class RxMixerProductNode(EmitNode):
     def mixer_product_table_units(self) -> MixerProductTableUnitsOption:
         """Specifies the units for the Mixer Products."""
         val = self._get_property("Mixer Product Table Units")
-        val = self.MixerProductTableUnitsOption(val)
+        val = self.MixerProductTableUnitsOption[val.upper()]
         return val
 
     @mixer_product_table_units.setter

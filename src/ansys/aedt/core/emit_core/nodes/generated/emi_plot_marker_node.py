@@ -150,7 +150,7 @@ class EmiPlotMarkerNode(EmitNode):
     def horizontal_position(self) -> HorizontalPositionOption:
         """Specify horizontal position of the label as compared to the symbol."""
         val = self._get_property("Horizontal Position")
-        val = self.HorizontalPositionOption(val)
+        val = self.HorizontalPositionOption[val.upper()]
         return val
 
     @horizontal_position.setter
@@ -168,7 +168,7 @@ class EmiPlotMarkerNode(EmitNode):
     def vertical_position(self) -> VerticalPositionOption:
         """Specify vertical position of the label as compared to the symbol."""
         val = self._get_property("Vertical Position")
-        val = self.VerticalPositionOption(val)
+        val = self.VerticalPositionOption[val.upper()]
         return val
 
     @vertical_position.setter
@@ -186,7 +186,7 @@ class EmiPlotMarkerNode(EmitNode):
     def text_alignment(self) -> TextAlignmentOption:
         """Specify justification applied to multi-line text."""
         val = self._get_property("Text Alignment")
-        val = self.TextAlignmentOption(val)
+        val = self.TextAlignmentOption[val.upper()]
         return val
 
     @text_alignment.setter
@@ -307,7 +307,7 @@ class EmiPlotMarkerNode(EmitNode):
     def symbol(self) -> SymbolOption:
         """Specify symbol displayed next to the label."""
         val = self._get_property("Symbol")
-        val = self.SymbolOption(val)
+        val = self.SymbolOption[val.upper()]
         return val
 
     @symbol.setter

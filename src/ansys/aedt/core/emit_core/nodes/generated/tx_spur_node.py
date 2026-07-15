@@ -107,7 +107,7 @@ class TxSpurNode(EmitNode):
     def spur_table_units(self) -> SpurTableUnitsOption:
         """Specifies the units for the Spurs."""
         val = self._get_property("Spur Table Units")
-        val = self.SpurTableUnitsOption(val)
+        val = self.SpurTableUnitsOption[val.upper()]
         return val
 
     @spur_table_units.setter

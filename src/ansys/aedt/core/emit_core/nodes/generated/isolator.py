@@ -139,7 +139,7 @@ class Isolator(EmitNode):
         simulated) or Parametric.
         """
         val = self._get_property("Isolator Type")
-        val = self.IsolatorTypeOption(val)
+        val = self.IsolatorTypeOption[val.upper()]
         return val
 
     @isolator_type.setter

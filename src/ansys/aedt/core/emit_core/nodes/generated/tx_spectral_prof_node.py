@@ -116,7 +116,7 @@ class TxSpectralProfNode(EmitNode):
     def spectrum_type(self) -> SpectrumTypeOption:
         """Specifies EMI Margins to calculate."""
         val = self._get_property("Spectrum Type")
-        val = self.SpectrumTypeOption(val)
+        val = self.SpectrumTypeOption[val.upper()]
         return val
 
     @spectrum_type.setter
@@ -133,7 +133,7 @@ class TxSpectralProfNode(EmitNode):
     def tx_power(self) -> TxPowerOption:
         """Method used to specify the power."""
         val = self._get_property("Tx Power")
-        val = self.TxPowerOption(val)
+        val = self.TxPowerOption[val.upper()]
         return val
 
     @tx_power.setter
@@ -216,7 +216,7 @@ class TxSpectralProfNode(EmitNode):
     def harmonic_taper(self) -> HarmonicTaperOption:
         """Taper type used to set amplitude of harmonics."""
         val = self._get_property("Harmonic Taper")
-        val = self.HarmonicTaperOption(val)
+        val = self.HarmonicTaperOption[val.upper()]
         return val
 
     @harmonic_taper.setter

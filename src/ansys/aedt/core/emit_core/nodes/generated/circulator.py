@@ -139,7 +139,7 @@ class Circulator(EmitNode):
         simulated) or Parametric.
         """
         val = self._get_property("Circulator Type")
-        val = self.CirculatorTypeOption(val)
+        val = self.CirculatorTypeOption[val.upper()]
         return val
 
     @circulator_type.setter

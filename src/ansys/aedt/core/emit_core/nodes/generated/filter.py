@@ -142,7 +142,7 @@ class Filter(EmitNode):
         simulated data) or using one of EMIT's parametric models.
         """
         val = self._get_property("Filter Type")
-        val = self.FilterTypeOption(val)
+        val = self.FilterTypeOption[val.upper()]
         return val
 
     @filter_type.setter

@@ -145,7 +145,7 @@ class Multiplexer(EmitNode):
         definition for each pass band).
         """
         val = self._get_property("Multiplexer Type")
-        val = self.MultiplexerTypeOption(val)
+        val = self.MultiplexerTypeOption[val.upper()]
         return val
 
     @multiplexer_type.setter

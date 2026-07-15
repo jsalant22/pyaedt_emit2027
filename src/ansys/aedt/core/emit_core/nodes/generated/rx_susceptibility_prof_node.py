@@ -118,7 +118,7 @@ class RxSusceptibilityProfNode(EmitNode):
     def sensitivity_units(self) -> SensitivityUnitsOption:
         """Units to use for the Rx Sensitivity."""
         val = self._get_property("Sensitivity Units")
-        val = self.SensitivityUnitsOption(val)
+        val = self.SensitivityUnitsOption[val.upper()]
         return val
 
     @sensitivity_units.setter

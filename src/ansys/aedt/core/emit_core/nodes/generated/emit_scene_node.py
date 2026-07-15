@@ -95,7 +95,7 @@ class EmitSceneNode(EmitNode):
     def ground_plane_normal(self) -> GroundPlaneNormalOption:
         """Specifies the axis of the normal to the ground plane."""
         val = self._get_property("Ground Plane Normal")
-        val = self.GroundPlaneNormalOption(val)
+        val = self.GroundPlaneNormalOption[val.upper()]
         return val
 
     @ground_plane_normal.setter

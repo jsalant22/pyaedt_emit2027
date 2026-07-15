@@ -81,7 +81,7 @@ class MultiplexerBand(EmitNode):
         models.
         """
         val = self._get_property("Passband Type")
-        val = self.PassbandTypeOption(val)
+        val = self.PassbandTypeOption[val.upper()]
         return val
 
     @passband_type.setter

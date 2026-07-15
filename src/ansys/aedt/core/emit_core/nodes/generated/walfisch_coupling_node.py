@@ -151,7 +151,7 @@ class WalfischCouplingNode(EmitNode):
     def path_loss_type(self) -> PathLossTypeOption:
         """Specify LOS vs NLOS for the Walfisch-Ikegami model."""
         val = self._get_property("Path Loss Type")
-        val = self.PathLossTypeOption(val)
+        val = self.PathLossTypeOption[val.upper()]
         return val
 
     @path_loss_type.setter
@@ -168,7 +168,7 @@ class WalfischCouplingNode(EmitNode):
     def environment(self) -> EnvironmentOption:
         """Specify the environment type for the Walfisch model."""
         val = self._get_property("Environment")
-        val = self.EnvironmentOption(val)
+        val = self.EnvironmentOption[val.upper()]
         return val
 
     @environment.setter
@@ -307,7 +307,7 @@ class WalfischCouplingNode(EmitNode):
     def fading_type(self) -> FadingTypeOption:
         """Specify the type of fading to include."""
         val = self._get_property("Fading Type")
-        val = self.FadingTypeOption(val)
+        val = self.FadingTypeOption[val.upper()]
         return val
 
     @fading_type.setter

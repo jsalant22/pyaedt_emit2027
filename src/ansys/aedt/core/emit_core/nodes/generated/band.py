@@ -246,7 +246,7 @@ class Band(EmitNode):
     def modulation(self) -> ModulationOption:
         """Modulation used for the transmitted/received signal."""
         val = self._get_property("Modulation")
-        val = self.ModulationOption(val)
+        val = self.ModulationOption[val.upper()]
         return val
 
     @modulation.setter
@@ -354,7 +354,7 @@ class Band(EmitNode):
     def psk_type(self) -> PSKTypeOption:
         """PSK modulation order: helps determine spectral profile."""
         val = self._get_property("PSK Type")
-        val = self.PSKTypeOption(val)
+        val = self.PSKTypeOption[val.upper()]
         return val
 
     @psk_type.setter
@@ -372,7 +372,7 @@ class Band(EmitNode):
     def fsk_type(self) -> FSKTypeOption:
         """FSK modulation order: helps determine spectral profile."""
         val = self._get_property("FSK Type")
-        val = self.FSKTypeOption(val)
+        val = self.FSKTypeOption[val.upper()]
         return val
 
     @fsk_type.setter
@@ -392,7 +392,7 @@ class Band(EmitNode):
     def qam_type(self) -> QAMTypeOption:
         """QAM modulation order: helps determine spectral profile."""
         val = self._get_property("QAM Type")
-        val = self.QAMTypeOption(val)
+        val = self.QAMTypeOption[val.upper()]
         return val
 
     @qam_type.setter
@@ -412,7 +412,7 @@ class Band(EmitNode):
     def apsk_type(self) -> APSKTypeOption:
         """APSK modulation order: helps determine spectral profile."""
         val = self._get_property("APSK Type")
-        val = self.APSKTypeOption(val)
+        val = self.APSKTypeOption[val.upper()]
         return val
 
     @apsk_type.setter
@@ -500,7 +500,7 @@ class Band(EmitNode):
     def radar_type(self) -> RadarTypeOption:
         """Radar type: helps determine spectral profile."""
         val = self._get_property("Radar Type")
-        val = self.RadarTypeOption(val)
+        val = self.RadarTypeOption[val.upper()]
         return val
 
     @radar_type.setter

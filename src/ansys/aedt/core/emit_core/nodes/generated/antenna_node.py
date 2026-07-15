@@ -132,7 +132,7 @@ class AntennaNode(EmitNode):
         Select the convention (order of rotations) for configuring orientation.
         """
         val = self._get_property("Orientation Mode")
-        val = self.OrientationModeOption(val)
+        val = self.OrientationModeOption[val.upper()]
         return val
 
     @orientation_mode.setter
@@ -219,7 +219,7 @@ class AntennaNode(EmitNode):
     def antenna_type(self) -> AntennaTypeOption:
         """Defines the type of antenna."""
         val = self._get_property("Antenna Type")
-        val = self.AntennaTypeOption(val)
+        val = self.AntennaTypeOption[val.upper()]
         return val
 
     @antenna_type.setter
@@ -546,7 +546,7 @@ class AntennaNode(EmitNode):
     def tapering_function(self) -> TaperingFunctionOption:
         """Tapering function."""
         val = self._get_property("Tapering Function")
-        val = self.TaperingFunctionOption(val)
+        val = self.TaperingFunctionOption[val.upper()]
         return val
 
     @tapering_function.setter
@@ -649,7 +649,7 @@ class AntennaNode(EmitNode):
     def antenna_polarization(self) -> AntennaPolarizationOption:
         """Choose local-coordinates polarization along boresight."""
         val = self._get_property("Antenna Polarization")
-        val = self.AntennaPolarizationOption(val)
+        val = self.AntennaPolarizationOption[val.upper()]
         return val
 
     @antenna_polarization.setter

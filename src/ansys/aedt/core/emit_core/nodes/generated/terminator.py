@@ -133,7 +133,7 @@ class Terminator(EmitNode):
         simulated) or Parametric.
         """
         val = self._get_property("Terminator Type")
-        val = self.TerminatorTypeOption(val)
+        val = self.TerminatorTypeOption[val.upper()]
         return val
 
     @terminator_type.setter

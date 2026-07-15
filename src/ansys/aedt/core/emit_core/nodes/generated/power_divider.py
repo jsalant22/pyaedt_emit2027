@@ -140,7 +140,7 @@ class PowerDivider(EmitNode):
         or simulated), 3 dB (parametric), and Resistive (parametric).
         """
         val = self._get_property("Power Divider Type")
-        val = self.PowerDividerTypeOption(val)
+        val = self.PowerDividerTypeOption[val.upper()]
         return val
 
     @power_divider_type.setter

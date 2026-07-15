@@ -207,7 +207,7 @@ class PropagationLossCouplingNode(EmitNode):
     def fading_type(self) -> FadingTypeOption:
         """Specify the type of fading to include."""
         val = self._get_property("Fading Type")
-        val = self.FadingTypeOption(val)
+        val = self.FadingTypeOption[val.upper()]
         return val
 
     @fading_type.setter
