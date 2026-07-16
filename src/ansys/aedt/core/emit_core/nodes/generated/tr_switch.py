@@ -52,7 +52,8 @@ class TR_Switch(EmitNode):
         Returns
         -------
         csv_data: str
-            stringified data for the node returned if file_name not specified"""
+            stringified data for the node returned if file_name not specified
+        """
         keys = "SelectedInputPort|SelectedOutputPort"
         vals = f"{ports}"
         return self._export_to_csv(file_name, keys, vals)
@@ -65,7 +66,8 @@ class TR_Switch(EmitNode):
         ----------
         ports: str
             the ports to export the data for.
-            Default orientation port names: 2|1|3"""
+            Default orientation port names: 2|1|3
+        """
         keys = "SelectedInputPort|SelectedOutputPort"
         vals = f"{ports}"
         return self._plot(keys, vals)
