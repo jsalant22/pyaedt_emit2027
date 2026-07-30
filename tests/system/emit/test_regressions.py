@@ -27,6 +27,7 @@ import os
 import sys
 import tempfile
 import time
+from typing import cast
 
 import psutil
 import pytest
@@ -48,6 +49,8 @@ from ansys.aedt.core.emit_core.nodes.generated import TxNbEmissionNode
 from ansys.aedt.core.emit_core.nodes.generated import TxSpectralProfNode
 from ansys.aedt.core.emit_core.nodes.generated import TxSpurNode
 from ansys.aedt.core.emit_core.nodes.generated import EmitSceneNode
+from ansys.aedt.core.emit_core.nodes.generated.radio_node import RadioNode
+from ansys.aedt.core.emit_core.nodes.generated.waveform import Waveform
 from ansys.aedt.core.emit_core.results.interaction import Interaction
 from ansys.aedt.core.emit_core.results.interaction_domain import InteractionDomain
 from ansys.aedt.core.emit_core.results.revision import Revision
@@ -974,4 +977,85 @@ def test_defect_1482347_export_selection_radio_vs_all(emit_app) -> None:
         f"got {len(data_lines)} data line(s). "
         f"Export Selection with Radio vs All should produce data."
     )
+
+
+@pytest.mark.skipif(not DESKTOP_VERSION or DESKTOP_VERSION < "2027.1", reason="Regression test for defect 1485287.")
+def test_defect_1485287_duplicated_imported_emitter_band_reload(add_app) -> None:
+    """Regression test for TFS defect 1485287.
+
+    EDT freezes when opening emitter configuration with a duplicated imported band
+    https://tfs.ansys.com:8443/tfs/ANSYS_Development/Portfolio/_workitems/edit/1485287
+
+    Severity: Class 1 - Crash/Major Data Loss
+
+    Reopening a project re-imported duplicated emitter bands with full narrowband
+    extraction on the UI thread. Fixed in BandNode::importSpectralFile load path.
+    """
+    app = add_app(application=Emit)
+    emitter_comp = app.schematic.create_component(
+        name="TestEmitter1485287", component_type="New Emitter", library="Emitters"
+    )
+    rev: Revision = app.results.analyze()
+    emitter_node: EmitterNode = rev.get_component_node(emitter_comp.name)
+    radio: RadioNode = emitter_node.get_radio()
+
+    csv_path = os.path.join(tempfile.gettempdir(), "emitter_file_1485287.csv")
+    csv_lines = [
+        '"Frequency (hertz)","Amplitude (dBV)"',
+        "1e6,-10",
+        "2e6,-20",
+        "3e6,-15",
+        "4e6,-25",
+        "5e6,-30",
+        "6e6,-12",
+        "7e6,-18",
+        "8e6,-22",
+    ]
+    try:
+        with open(csv_path, "w") as f:
+            f.write("\n".join(csv_lines) + "\n")
+
+        band: Waveform = cast(Waveform, radio.add_band())
+        band.waveform = Waveform.WaveformOption.IMPORTED
+        band.imported_spectrum = csv_path
+
+        tx_spec = band.children[0]
+        spur_node = next(
+            (c for c in tx_spec.children if isinstance(c, TxSpurNode)),
+            None,
+        )
+        assert spur_node is not None, "Imported band should create a spur table"
+        expected_spur_table = spur_node.table_data
+        assert len(expected_spur_table) > 0
+
+        band.duplicate()
+        waveforms = emitter_node.get_waveforms()
+        assert len(waveforms) >= 2
+
+        project_file = app.project_file
+        app.save_project()
+        app.close_project(app.project_name, save=False)
+
+        app2 = add_app(project=project_file, application=Emit)
+        rev2: Revision = app2.results.analyze()
+
+        reopened_emitter: EmitterNode = rev2.get_component_node(emitter_comp.name)
+        reopened_waveforms = reopened_emitter.get_waveforms()
+        assert len(reopened_waveforms) >= 2
+
+        for wf in reopened_waveforms:
+            assert wf.waveform == Waveform.WaveformOption.IMPORTED
+            assert wf.imported_spectrum.endswith("emitter_file_1485287.csv")
+            tx_spec_reopened = wf.children[0]
+            spur_reopened = next(
+                (c for c in tx_spec_reopened.children if isinstance(c, TxSpurNode)),
+                None,
+            )
+            assert spur_reopened is not None
+            assert spur_reopened.table_data == expected_spur_table
+
+        app2.close_project(app2.project_name, save=False)
+    finally:
+        if os.path.exists(csv_path):
+            os.remove(csv_path)
 
