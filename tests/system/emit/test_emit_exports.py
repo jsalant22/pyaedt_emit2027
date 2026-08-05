@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -25,35 +25,32 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 import sys
 import tempfile
 
+import matplotlib
 import pytest
 
 from ansys.aedt.core.generic.general_methods import is_linux
 from tests import TESTS_EMIT_PATH
 from tests.conftest import DESKTOP_VERSION
 
-import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 
 if ((3, 8) <= sys.version_info[0:2] <= (3, 11) and DESKTOP_VERSION < "2025.1") or (
     (3, 10) <= sys.version_info[0:2] <= (3, 12) and DESKTOP_VERSION > "2024.2"
 ):
     from ansys.aedt.core import Emit
-    from ansys.aedt.core.emit_core.emit_constants import TxRxMode
-    from ansys.aedt.core.emit_core.nodes.emit_node import EmitNode
+    from ansys.aedt.core.emit_core.nodes.generated import Amplifier
     from ansys.aedt.core.emit_core.nodes.generated import AntennaNode
     from ansys.aedt.core.emit_core.nodes.generated import Band
-    from ansys.aedt.core.emit_core.nodes.generated import Amplifier
     from ansys.aedt.core.emit_core.nodes.generated import Cable
     from ansys.aedt.core.emit_core.nodes.generated import Circulator
     from ansys.aedt.core.emit_core.nodes.generated import CouplingsNode
     from ansys.aedt.core.emit_core.nodes.generated import Filter
     from ansys.aedt.core.emit_core.nodes.generated import Isolator
     from ansys.aedt.core.emit_core.nodes.generated import Multiplexer
-    from ansys.aedt.core.emit_core.nodes.generated import MultiplexerBand
     from ansys.aedt.core.emit_core.nodes.generated import PowerDivider
     from ansys.aedt.core.emit_core.nodes.generated import PropagationLossCouplingNode
     from ansys.aedt.core.emit_core.nodes.generated import RadioNode
@@ -70,9 +67,6 @@ if ((3, 8) <= sys.version_info[0:2] <= (3, 11) and DESKTOP_VERSION < "2025.1") o
     from ansys.aedt.core.emit_core.nodes.generated import TxNbEmissionNode
     from ansys.aedt.core.emit_core.nodes.generated import TxSpectralProfNode
     from ansys.aedt.core.emit_core.nodes.generated import TxSpurNode
-    from ansys.aedt.core.emit_core.results.interaction_domain import InteractionDomain
-    from ansys.aedt.core.emit_core.results.revision import Revision
-    from ansys.aedt.core.emit_core.emit_schematic import EmitSchematic
 
 TEST_SUBFOLDER = TESTS_EMIT_PATH / "example_models/TEMIT"
 
@@ -91,7 +85,7 @@ def _setup_two_radio_project(emit_app):
 
     ant1.position_defined = True
     ant1.position = "0 0 5"
-    
+
     ant2.position_defined = True
     ant2.position = "10 0 10"
 
@@ -127,7 +121,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "Cable CSV export should contain data rows."
 
         # test cable plot
@@ -137,7 +131,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "cable_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Cable plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Cable plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Cable plot file is empty."
 
     def test_filter_export(self, emit_app):
         """Test export_to_csv on a Filter node (SelectedInputPort|SelectedOutputPort keys)."""
@@ -158,7 +152,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "Filter CSV export should contain data rows."
 
         # Change the filter to a tunable filter and test export
@@ -177,7 +171,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "filter_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Filter plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Filter plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Filter plot file is empty."
 
     def test_amplifier_export(self, emit_app):
         """Test export_to_csv on an Amplifier node."""
@@ -197,7 +191,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "Amplifier CSV export should contain data rows."
 
         # test amplifier plot props
@@ -212,7 +206,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "amplifier_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Amplifier plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Amplifier plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Amplifier plot file is empty."
 
     def test_circulator_export(self, emit_app):
         """Test export_to_csv on a Circulator node."""
@@ -230,10 +224,12 @@ class TestEmitExports:
         data = None
         with pytest.raises(Exception):
             data = circ_node.export_to_csv(ports="1|3")
-            
+
         assert data is None
         err_msg = emit_app._odesktop.GetMessages("", "", 2)[0]
-        assert "The reverse isolation is infinite." in err_msg, "Expected error message to contain 'The reverse isolation is infinite.'"
+        assert "The reverse isolation is infinite." in err_msg, (
+            "Expected error message to contain 'The reverse isolation is infinite.'"
+        )
         emit_app._odesktop.ClearMessages("", "", 2, 2)
 
         # set reverse isolation to a finite value and try again
@@ -249,7 +245,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "Circulator CSV export should contain data rows."
 
         fig = circ_node.plot()
@@ -258,7 +254,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "circulator_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Circulator plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Circulator plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Circulator plot file is empty."
 
     def test_isolator_export(self, emit_app):
         """Test export_to_csv on an Isolator node."""
@@ -295,7 +291,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "Isolator CSV export should contain data rows."
 
         fig = iso_node.plot()
@@ -304,7 +300,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "isolator_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Isolator plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Isolator plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Isolator plot file is empty."
 
     def test_power_divider_export(self, emit_app):
         """Test export_to_csv on a PowerDivider node."""
@@ -340,7 +336,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "PowerDivider CSV export should contain data rows."
 
         fig = div_node.plot()
@@ -349,7 +345,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "divider_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "PowerDivider plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "PowerDivider plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "PowerDivider plot file is empty."
 
     def test_tr_switch_export(self, emit_app):
         """Test export_to_csv on a TR Switch node."""
@@ -386,7 +382,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "TR Switch CSV export should contain data rows."
 
         fig = sw_node.plot()
@@ -395,7 +391,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "tr_switch_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "TR Switch plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "TR Switch plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "TR Switch plot file is empty."
 
     def test_terminator_export(self, emit_app):
         """Test export_to_csv on a Terminator node."""
@@ -412,7 +408,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "Terminator CSV export should contain data rows."
 
         fig = term_node.plot()
@@ -421,7 +417,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "terminator_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Terminator plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Terminator plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Terminator plot file is empty."
 
     def test_multiplexer_export(self, emit_app):
         """Test export_to_csv on a Multiplexer node."""
@@ -445,7 +441,7 @@ class TestEmitExports:
             assert os.path.isfile(csv_path)
             with open(csv_path, "r") as f:
                 content = f.read()
-            lines = [l for l in content.strip().split("\n") if l.strip()]
+            lines = [line for line in content.strip().split("\n") if line.strip()]
             assert len(lines) > 0, "Multiplexer CSV export should contain data rows."
 
         # test multiplexer band export
@@ -467,7 +463,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "multiplexer_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Multiplexer plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Multiplexer plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Multiplexer plot file is empty."
 
     def test_coupling_node_export(self, emit_app):
         """Test export_to_csv on a parametric coupling node (SelectedRxAntenna|SelectedTxAntenna)."""
@@ -479,7 +475,7 @@ class TestEmitExports:
 
         scene_node = revision.get_scene_node()
         ant_children = scene_node.children
-        ant_short_names = [c.name for c in ant_children if isinstance(c, AntennaNode)]  
+        ant_short_names = [c.name for c in ant_children if isinstance(c, AntennaNode)]
         ant_full_names = [c._full_node_name for c in ant_children if isinstance(c, AntennaNode)]
         assert len(ant_short_names) >= 2, "Expected at least 2 antennas in the scene."
 
@@ -490,7 +486,7 @@ class TestEmitExports:
         data2 = coupling_data.export_to_csv("", antennas=(ant_children[0], ant_children[1]))
         assert data2 is not None
         assert len(data2) > 0, "Coupling CSV export should return non-empty data."
-        assert data == data2, "Coupling CSV export should return the same data."    
+        assert data == data2, "Coupling CSV export should return the same data."
 
         # test path loss coupling node export
         path_loss: PropagationLossCouplingNode = coupling_data._add_child_node("Path Loss Coupling")
@@ -523,7 +519,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "coupling_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Coupling plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Coupling plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Coupling plot file is empty."
 
     def test_band_export(self, emit_app):
         """Test export_to_csv on a Band node."""
@@ -531,7 +527,7 @@ class TestEmitExports:
         band: Band = radio.children[0]
         assert band is not None
         band.stop_frequency = 200e6
-        
+
         data = band.export_to_csv("", channel_freq=150e6, channel_type=Band.ChannelType.TX)
         assert data is not None
         assert len(data) > 0, "Band CSV export should return non-empty data."
@@ -546,7 +542,7 @@ class TestEmitExports:
             png_path = os.path.join(tmp_dir, "band_plot.png")
             fig.savefig(png_path)
             assert os.path.isfile(png_path), "Band plot figure was not saved."
-            assert os.path.getsize(png_path) > 0, "Band plot file is empty."
+            assert Path(png_path).stat().st_size > 0, "Band plot file is empty."
 
         with tempfile.TemporaryDirectory() as export_dir:
             # --- Tx Spectral Profile ---
@@ -561,7 +557,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "tx_spectral_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Tx Broadband Emissions ---
             tx_bb: TxBbEmissionNode = tx_spec.add_tx_broadband_noise_profile()
@@ -575,7 +571,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "tx_bb_emission_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Tx Harmonics ---
             tx_harm: TxHarmonicNode = tx_spec.add_custom_tx_harmonics()
@@ -589,7 +585,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "tx_harmonics_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Tx Spurs ---
             tx_spur: TxSpurNode = tx_spec.add_spurious_emissions()
@@ -603,7 +599,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "tx_spurs_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Tx Narrowband Emissions ---
             tx_nb: TxNbEmissionNode = tx_spec.add_narrowband_emissions_mask()
@@ -618,7 +614,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "tx_nb_emission_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Rx Susceptibility Profile ---
             rx_spec: RxSusceptibilityProfNode = band.children[1]
@@ -632,7 +628,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "rx_susceptibility_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Rx Mixer Products ---
             rx_mixer: RxMixerProductNode = rx_spec.add_mixer_products()
@@ -646,7 +642,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "rx_mixer_products_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Rx Saturation ---
             rx_sat: RxSaturationNode = rx_spec.add_rx_saturation()
@@ -660,7 +656,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "rx_saturation_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Rx Selectivity ---
             rx_sel: RxSelectivityNode = rx_spec.add_rx_selectivity()
@@ -675,7 +671,7 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "rx_selectivity_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0
 
             # --- Rx Spurs ---
             rx_spur: RxSpurNode = rx_spec.add_spurious_responses()
@@ -689,5 +685,4 @@ class TestEmitExports:
             assert fig is not None
             png_path = os.path.join(export_dir, "rx_spurs_plot.png")
             fig.savefig(png_path)
-            assert os.path.isfile(png_path) and os.path.getsize(png_path) > 0
-
+            assert os.path.isfile(png_path) and Path(png_path).stat().st_size > 0

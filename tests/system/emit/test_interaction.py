@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -656,7 +656,7 @@ def test_export(export):
         comment_lines = [line for line in lines if line.startswith("#")]
         data_lines = [line for line in lines if not line.startswith("#")]
         assert len(comment_lines) == 9, "Expected categorization comment header"
-        assert len(data_lines) == data_lines_expected, f'Expected column header + {data_lines_expected - 1} data rows'
+        assert len(data_lines) == data_lines_expected, f"Expected column header + {data_lines_expected - 1} data rows"
 
         # Data rows should reference the selected radios
         for row in data_lines[1:]:
@@ -748,10 +748,7 @@ def test_export(export):
 
     # N to 1
     csv_path = os.path.join(temp_dir, "n_to_1.csv")
-    domain.set_receiver(
-        radio="Rx_MultiBands",
-        band="Band 2"
-    )
+    domain.set_receiver(radio="Rx_MultiBands", band="Band 2")
     domain.set_interferer(radio="")
     sim.run(domain)
     interaction: Interaction = Interaction(export, domain, rev)
