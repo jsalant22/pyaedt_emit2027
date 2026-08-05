@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -64,8 +64,7 @@ class Interaction:
             raise ValueError("Interaction is not valid: " + error)
 
         if result_type == ResultType.POWER_AT_RX:
-            warnings.warn("Worst case instances are not available for Power At Rx.")
-            return None
+            raise ValueError("Worst case instances are not available for Power At Rx.")
 
         # N-to-1 worst instance cannot be scoped to a specific receiver channel.
         # Catch this before the gRPC call to provide a clearer error message.

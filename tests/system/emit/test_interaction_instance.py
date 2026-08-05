@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,7 +21,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 
 import pytest
 
@@ -180,3 +179,35 @@ def test_instance_get_value_invalid_result_type(cell_phone):
     with pytest.raises(ValueError) as e:
         instance.get_value(7)
     assert "Invalid result type" in str(e.value)
+
+
+@pytest.mark.skipif(DESKTOP_VERSION < "2027.1", reason="Skipped on versions earlier than 2027.1")
+def test_instance_get_worst_instance(cell_phone):
+    rev = cell_phone.results.analyze()
+    sim = rev.get_simulation()
+    domain = InteractionDomain(cell_phone)
+    domain.set_receiver(radio="", band="", freq=0, units="GHz")
+    domain.set_interferer(radio="", band="", freq=0, units="GHz")
+
+    interaction = sim.run(domain)
+    domain.set_receiver(radio="GPS Receiver", band="L2", freq=1227600000.0)
+    domain.set_interferers(radios=["WiFi - 802.11-2012"], bands=["Tx OFDM - 54 Mbps"], freqs=[2412000000.0])
+
+    worst_instance = interaction.get_worst_instance(ResultType.DESENSE)
+    assert isinstance(worst_instance, InteractionInstance)
+    assert worst_instance.is_valid()
+    assert worst_instance.get_value(ResultType.DESENSE) == 4.64
+
+    worst_instance = interaction.get_worst_instance(ResultType.SENSITIVITY)
+    assert isinstance(worst_instance, InteractionInstance)
+    assert worst_instance.is_valid()
+    assert worst_instance.get_value(ResultType.SENSITIVITY) == -120.36
+
+    worst_instance = interaction.get_worst_instance(ResultType.EMI)
+    assert isinstance(worst_instance, InteractionInstance)
+    assert worst_instance.is_valid()
+    assert worst_instance.get_value(ResultType.EMI) == 6.9
+
+    with pytest.raises(ValueError) as e:
+        interaction.get_worst_instance(ResultType.POWER_AT_RX)
+    assert "Worst case instances are not available for Power At Rx." in str(e.value)
