@@ -1028,3 +1028,66 @@ def test_defect_1482347_export_selection_radio_vs_all(emit_app) -> None:
         f"Export Selection with Radio vs All should produce data."
     )
 
+
+@pytest.mark.skipif(not DESKTOP_VERSION or DESKTOP_VERSION < "2027.1", reason="Regression test for defect 1495152.")
+def test_defect_1495152_behavior_change_on_schematiceditor(emit_app) -> None:
+    """Regression test for TFS defect 1495152.
+
+    Behavior change on SchematicEditor
+    https://tfs.ansys.com:8443/tfs/ANSYS_Development/Portfolio/_workitems/edit/1495152
+
+    Severity: Class 2 - Serious Problem
+
+    Regression from S1346524 selection refactor: EmitSchematicDocUI::Select
+    auto-adds connecting wires, but SchCommonDocUI::Select no longer synced
+    those wires into mSelected. GetSelections/Copy then omitted wires.
+    """
+    oeditor = emit_app.oeditor
+
+    # Place antenna onto radio so they share a connecting wire
+    radio = emit_app.schematic.create_component("New Radio", name="Radio_1495152")
+    antenna = emit_app.schematic.create_component("Antenna", name="Antenna_1495152")
+    emit_app.schematic.connect_components(antenna.name, radio.name)
+
+    # --- GetSelections includes connecting wires when both ends are selected ---
+    oeditor.Select(radio.name, True)
+    oeditor.Select(antenna.name, False)
+    selections = list(oeditor.GetSelections())
+    wire_selections = [s for s in selections if str(s).startswith("Wire@")]
+    assert radio.name in selections and antenna.name in selections, (
+        f"Expected both components in GetSelections, got {selections}"
+    )
+    assert wire_selections, (
+        f"Connecting wire missing from GetSelections after selecting both ends. "
+        f"Got: {selections}"
+    )
+
+    # --- Copy of a selection that includes the wire preserves connectivity ---
+    # B1495152: wires must be in mSelected so Copy/EmitCopySchNetsToCB sees them
+    oeditor.Copy(selections)
+    comps_before = set(oeditor.GetAllComponents())
+    radio_loc = oeditor.GetComponentLocation(radio.name)
+    oeditor.Paste(radio_loc[0], radio_loc[1] - 0.02)
+    comps_after = set(oeditor.GetAllComponents())
+    pasted = list(comps_after - comps_before)
+    assert len(pasted) >= 2, f"Expected pasted radio+antenna (wire-inclusive copy), got {pasted}"
+
+    # Select both pasted components; connecting wire must again appear in GetSelections
+    oeditor.Select(pasted[0], True)
+    oeditor.Select(pasted[1], False)
+    pasted_sels = list(oeditor.GetSelections())
+    pasted_wires = [s for s in pasted_sels if str(s).startswith("Wire@")]
+    assert pasted_wires, (
+        f"Pasted components should still be wire-connected; GetSelections={pasted_sels}"
+    )
+
+    # --- PlaceComponent still attaches components to open ports ---
+    radio_place = emit_app.schematic.create_component("New Radio", name="RadioPlace_1495152")
+    cable = emit_app.schematic.create_component("Cable", name="Cable_1495152")
+    oeditor.PlaceComponent(cable.name, radio_place.name)
+    oeditor.Select(cable.name, True)
+    oeditor.Select(radio_place.name, False)
+    place_sels = list(oeditor.GetSelections())
+    assert any(str(s).startswith("Wire@") for s in place_sels), (
+        f"PlaceComponent should attach cable to radio with a wire; GetSelections={place_sels}"
+    )
