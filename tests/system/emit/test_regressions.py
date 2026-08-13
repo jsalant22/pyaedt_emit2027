@@ -1021,3 +1021,59 @@ def test_defect_1482347_export_selection_radio_vs_all(emit_app) -> None:
         f"got {len(data_lines)} data line(s). "
         f"Export Selection with Radio vs All should produce data."
     )
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="iemit.exe / result windows only on Windows.")
+@pytest.mark.skipif(not DESKTOP_VERSION or DESKTOP_VERSION < "2027.1", reason="Regression test for defect 1496144.")
+def test_defect_1496144_no_crash_on_project_close_with_kept_result(desktop, add_app) -> None:
+    """Regression test for TFS defect 1496144.
+
+    Exception on project close
+    https://tfs.ansys.com:8443/tfs/ANSYS_Development/Portfolio/_workitems/edit/1496144
+
+    Severity: Class 2 - Minor Problem
+
+    Before the fix, closing a project with a kept-result window open left the
+    SubProcessResultWindowMgr registered with EmitSubProcessCrashWatcherUI.
+    The watcher's onTick then treated the intentional shutdown as a crash and
+    called ResetCurrentResultSettingsSubProcessManager on a destroyed manager
+    (access violation). The fix always unregisters kept-result managers on
+    stop/cleanup and guards onTick against stale snapshot entries.
+    """
+    aedt_pid = desktop.aedt_process_id
+    assert psutil.pid_exists(aedt_pid), "AEDT process must be running"
+
+    app = add_app(application=Emit)
+    project_name = app.project_name
+
+    _ = app.schematic.create_component("New Radio")
+    app.results.analyze()
+
+    # Match the defect repro: open current result, keep it, open kept result.
+    app.odesign.ShowResultWindow("")
+    time.sleep(2)
+    kept_name = app.odesign.KeepResult()
+    assert kept_name, "KeepResult should return a result name"
+    app.odesign.ShowResultWindow(kept_name)
+    time.sleep(2)
+
+    iemit_with_windows = _count_iemit_children(aedt_pid)
+    assert iemit_with_windows > 0, "Expected iemit.exe while result windows are open"
+
+    # Close without saving — this previously triggered the crash watcher UAF.
+    app.close_project(project_name, save=False)
+
+    # Crash watcher ticks every 500ms; give it time to attempt a bad recovery.
+    time.sleep(3)
+    assert psutil.pid_exists(aedt_pid), (
+        "AEDT process died after closing a project with a kept-result window open"
+    )
+
+    # AEDT should still accept a new EMIT design (reporter confirmed this path
+    # after Continue, but we require it without an AV first).
+    app2 = add_app(application=Emit)
+    _ = app2.schematic.create_component("New Radio")
+    app2.results.analyze()
+    time.sleep(1)
+    assert _count_iemit_children(aedt_pid) > 0, "Expected iemit.exe for the new design"
+    app2.close_project(app2.project_name, save=False)
