@@ -29,12 +29,12 @@ import inspect
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import sys
 import tempfile
-import warnings
-from typing import List
 from unittest.mock import MagicMock
+import warnings
 
 import pytest
 
@@ -52,7 +52,7 @@ warnings.filterwarnings(
 )
 warnings.filterwarnings(
     "ignore",
-    message=".*defusedxml\.cElementTree is deprecated.*",
+    message=r".*defusedxml\.cElementTree is deprecated.*",
     category=DeprecationWarning,
 )
 
@@ -121,8 +121,20 @@ os.environ["PYAEDT_DESKTOP_VERSION"] = DESKTOP_VERSION
 AEDT_INSTALL_DIR = config.get("aedt_install_dir", None)
 if AEDT_INSTALL_DIR:
     from ansys.aedt.core.internal.aedt_versions import aedt_versions
+
     env_var = aedt_versions.get_version_env_variable(DESKTOP_VERSION)
     os.environ[env_var] = AEDT_INSTALL_DIR
+
+# ================================
+# Shared markers
+# ================================
+
+# Mark tests as xfail when PYAEDT_EDB_XFAIL=1
+# NOTE: Remove marker below if 26R1 SP2 is installed or later version of AEDT is used.
+edb_xfail = pytest.mark.xfail(
+    condition=os.environ.get("PYAEDT_EDB_XFAIL") == "1",
+    reason="PyEDB tests are unstable",
+)
 
 # ================================
 # PyAEDT settings
@@ -173,6 +185,46 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(pytest.mark.emit)
             # Keep EMIT tests on a single xdist worker so they run serially
             item.add_marker(pytest.mark.xdist_group("emit_serial"))
+
+
+def _env_is_truthy(name: str) -> bool:
+    """Return True when the environment variable contains a truthy value."""
+    return os.environ.get(name, "").lower() in {"1", "true", "yes"}
+
+
+def _is_tcl_init_error(exc: BaseException) -> bool:
+    """Return True only for intermittent Tcl/Tk library discovery or load failures."""
+    if exc.__class__.__name__ != "TclError":
+        return False
+
+    return bool(
+        re.search(
+            r"Can't find a usable (init|tk)\.tcl"
+            r"|invalid command name \"tcl_findLibrary\""
+            r"|couldn't read file .+\.tcl.*no such file or directory",
+            str(exc),
+        )
+    )
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Mark known intermittent Tcl/Tk discovery errors as xfail on Windows CI or local opt-in."""
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.passed or report.when not in {"setup", "call"}:
+        return
+    if sys.platform != "win32":
+        return
+    if not (_env_is_truthy("ON_CI") or _env_is_truthy("PYAEDT_XFAIL_TCL_INIT")):
+        return
+    if call.excinfo is None:
+        return
+
+    if _is_tcl_init_error(call.excinfo.value):
+        report.outcome = "skipped"
+        report.wasxfail = "Intermittent tkinter Tcl/Tk discovery or load failure (Windows)"
 
 
 # ================================

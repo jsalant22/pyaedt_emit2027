@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# -*- coding: utf-8 -*-
 import os
 import sys
 import tempfile
@@ -749,7 +748,7 @@ def test_defect_1475694_iemit_dies_when_design_deleted(desktop, add_app) -> None
     app = add_app(application=Emit)
     design_name = app.design_name
 
-    app.schematic.create_component("New Radio")
+    _ = app.schematic.create_component("New Radio")
     app.results.analyze()
 
     time.sleep(2)
@@ -818,7 +817,6 @@ def test_defect_1486446_coupling_export_with_antennas_param(emit_app) -> None:
     )
 
 
-@pytest.mark.skipif(True, reason="B1457557 - need to fix SceneGroupNode.add_group().")
 @pytest.mark.skipif(not DESKTOP_VERSION or DESKTOP_VERSION < "2027.1", reason="Regression test for defect 1475679.")
 def test_defect_1475679_get_child_node_id_recurse(emit_app) -> None:
     """Regression test for TFS defect 1475679.
@@ -847,7 +845,9 @@ def test_defect_1475679_get_child_node_id_recurse(emit_app) -> None:
     assert group_node
 
     # add an emitter directly under the group
+    # B1491226: add_emitter() must return EmitterNode (not AntennaNode)
     emitter_node: EmitterNode = group_node.add_emitter()
+    assert isinstance(emitter_node, EmitterNode)
     assert emitter_node
 
     # get the emitter's antenna
