@@ -24,13 +24,13 @@
 
 
 import os
+from pathlib import Path
 import tempfile
 
 import pytest
 
 from ansys.aedt.core import Emit
 from ansys.aedt.core.emit_core.emit_constants import ResultType
-from ansys.aedt.core.emit_core.nodes.generated.couplings_node import CouplingsNode
 from ansys.aedt.core.emit_core.results.interaction import Interaction
 from ansys.aedt.core.emit_core.results.interaction_domain import InteractionDomain
 from ansys.aedt.core.emit_core.results.interaction_instance import InteractionInstance
@@ -39,16 +39,27 @@ from ansys.aedt.core.emit_core.results.simulation import Simulation
 from tests import TESTS_EMIT_PATH
 from tests.conftest import DESKTOP_VERSION
 
+
+def _resolve_emit_examples_path(desktop) -> Path:
+    """Prefer EMIT examples from the running Desktop install, otherwise use local test data."""
+    install_dir = getattr(desktop, "aedt_install_dir", None)
+    if install_dir:
+        candidate = Path(install_dir) / "Examples" / "EMIT"
+        if candidate.is_dir():
+            return candidate
+    return TESTS_EMIT_PATH / "example_models/TEMIT"
+
+
 TEST_SUBFOLDER = TESTS_EMIT_PATH / "example_models/TEMIT"
 
 
 @pytest.fixture
-def cell_phone(add_app_example):
+def cell_phone(add_app_example, desktop):
     """Fixture that loads the Cell Phone example project."""
     app = add_app_example(
-        project="Cell Phone",
+        project="Cell Phone RFI Desense",
         application=Emit,
-        subfolder=TEST_SUBFOLDER,
+        subfolder=_resolve_emit_examples_path(desktop),
     )
     yield app
     app.close_project(app.project_name, save=False)
@@ -142,6 +153,7 @@ def test_interaction_is_valid(cell_phone):
     assert not interaction.is_valid()
 
     domain.set_interferers(radios=["GSM Mobile Station"], bands=["Tx GSM-850"])
+    sim.purge(domain)
     # Check invalid domain (bad band name → domain validation error)
     with pytest.raises(ValueError) as e:
         interaction.validate()
@@ -229,7 +241,7 @@ def test_run_band_pair(cell_phone):
     assert instance is not None
 
     value = instance.get_value(ResultType.EMI)
-    assert value == 9.37
+    assert value == -3.87
 
     # Verify expected errors for requests of alternative result types from worst-case EMI instance
     with pytest.raises(ValueError) as e:
@@ -243,7 +255,7 @@ def test_run_band_pair(cell_phone):
     # Now verify alternative requests for worst-case desense
     instance_desense = interaction.get_worst_instance(ResultType.DESENSE)
     value = instance_desense.get_value(ResultType.DESENSE)
-    assert value == 3.54
+    assert value == -5.95
 
     with pytest.raises(ValueError) as e:
         instance_desense.get_value(ResultType.EMI)
@@ -597,7 +609,6 @@ def test_n_to_1_worst_case(n_to_1):
     # Get specific 1-to-1 instance
     domain.set_interferers(radios=["Tx1 - TxRadio1"], bands=["Band"], freqs=[100], units="MHz")
     domain.set_receiver(radio="Rx - RxRadio", band="Band", freq=100, units="MHz")
-    interaction = sim.run(domain)
     instance = interaction.get_instance(domain)
     value = instance.get_value(ResultType.EMI)
     assert value == 170.0
@@ -681,7 +692,6 @@ def test_export(export):
         freq=305,
         units="MHz",
     )
-    sim.run(domain)
     interaction: Interaction = Interaction(export, domain, rev)
     interaction.export_results(csv_path, True)
     assert os.path.isfile(csv_path)
@@ -694,7 +704,6 @@ def test_export(export):
     csv_path = os.path.join(temp_dir, "txn_rx1.csv")
     domain.set_interferer(radio="Tx_MultiBands", band="Band 2")
 
-    sim.run(domain)
     interaction: Interaction = Interaction(export, domain, rev)
     interaction.export_results(csv_path, True)
     assert os.path.isfile(csv_path)
@@ -716,7 +725,6 @@ def test_export(export):
         freq=305,
         units="MHz",
     )
-    sim.run(domain)
     interaction: Interaction = Interaction(export, domain, rev)
     interaction.export_results(csv_path, True)
     assert os.path.isfile(csv_path)
@@ -727,8 +735,8 @@ def test_export(export):
     validate_csv(csv_path, 103)
 
     # Force results purge
-    coupling_data: CouplingsNode = rev.get_coupling_data_node()
-    coupling_data.minimum_allowed_coupling = -40
+    domain = InteractionDomain(export)
+    sim.purge(domain)
 
     # N Rx Channels to 1 Tx Channel
     csv_path = os.path.join(temp_dir, "tx1_rxn_partial.csv")
@@ -750,8 +758,7 @@ def test_export(export):
     csv_path = os.path.join(temp_dir, "n_to_1.csv")
     domain.set_receiver(radio="Rx_MultiBands", band="Band 2")
     domain.set_interferer(radio="")
-    sim.run(domain)
-    interaction: Interaction = Interaction(export, domain, rev)
+    interaction = sim.run(domain)
     interaction.export_results(csv_path, True)
     assert os.path.isfile(csv_path)
 
@@ -774,13 +781,13 @@ def test_n_to_1_limit(cell_phone):
     # Get instance count for empty domain (all bands, all channels)
     domain = InteractionDomain(cell_phone)
     count = sim.get_instance_count(domain)
-    assert count == 17080
+    assert count == 17528
 
     # Change N-to-1 limit to 2^15
     sim.n_to_1_limit = int(2**15)
     assert sim.n_to_1_limit == int(2**15)
     count = sim.get_instance_count(domain)
-    assert count == 134665
+    assert count == 48884
 
 
 @pytest.mark.skipif(DESKTOP_VERSION < "2027.1", reason="Skipped on versions earlier than 2027.1")
@@ -793,18 +800,18 @@ def test_instance_count(cell_phone):
     sim.n_to_1_limit = -1
     domain = InteractionDomain(cell_phone)
     count = sim.get_instance_count(domain)
-    assert count == 134665
+    assert count == 48884
 
     # 1-1 count
     sim.n_to_1_limit = 1
     count = sim.get_instance_count(domain)
-    assert count == 17080
+    assert count == 17528
 
     # Count equivalence
     interaction = sim.run(domain)
     domain2 = InteractionDomain(cell_phone)
     count = sim.get_instance_count(domain2)
-    assert count == 17080
+    assert count == 17528
     # Verify domains are equivalent
     assert domain.receiver_name == domain2.receiver_name
     assert domain.receiver_band_name == domain2.receiver_band_name
@@ -834,3 +841,27 @@ def test_instance_count(cell_phone):
     assert domain3.interferer_names == domain4.interferer_names
     assert domain3.interferer_band_names == domain4.interferer_band_names
     assert domain3.interferer_channel_frequencies == domain4.interferer_channel_frequencies
+
+
+@pytest.mark.skipif(DESKTOP_VERSION < "2027.1", reason="Skipped on versions earlier than 2027.1")
+def test_run_interaction_error(cell_phone):
+    """Test running an interaction with channels specified."""
+    rev = cell_phone.results.analyze()
+    sim = rev.get_simulation()
+
+    # Create a domain with specific receiver and interferer
+    domain = InteractionDomain(cell_phone)
+    domain.set_receiver(radio="GPS Receiver", band="L2", freq=1575420000, units="Hz")
+    domain.set_interferers(radios=["GSM Mobile Station"], bands=["Tx GSM-850"])
+
+    # Run the interaction
+    with pytest.raises(ValueError) as e:
+        sim.run(domain)
+    assert "The domain must not have channels specified." in str(e.value)
+
+    domain.set_receiver(radio="GPS Receiver", band="L2")
+    domain.set_interferers(radios=["GSM Mobile Station"], bands=["Tx GSM-850"], freqs=[869000000], units="Hz")
+
+    with pytest.raises(ValueError) as e:
+        sim.run(domain)
+    assert "The domain must not have channels specified." in str(e.value)
